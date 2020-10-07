@@ -109,8 +109,9 @@ namespace Task1Tados
             }
 
             //создание экземпляра
-            object result = Activator.CreateInstance(type, constructorArgs);
-            
+            //object result = Activator.CreateInstance(type, constructorArgs);
+            object result = constructor.Invoke(constructorArgs);
+
             return result;
         }
     }
