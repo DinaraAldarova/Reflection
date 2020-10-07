@@ -66,19 +66,51 @@ namespace Task1Tados
                 throw new TypeIsNotClassException($"Тип {className} не является классом");
             }
 
-            //создание экземпляра
-            //проверка, что экземпляр создан (существует конструктор, подходят аргументы)
-            object result;
-            try
+            //проверка, что существует конструктор и подходят аргументы
+            ConstructorInfo[] constructors = type.GetConstructors();
+            if (constructors.Length == 0)
             {
-                result = Activator.CreateInstance(type, constructorArgs);
-            }
-            catch (MissingMethodException ex)
-            {
-                //System.MissingMethodException: "Constructor on type 'JuniorTest.Models.User' not found."
-                throw new ConstructorNotFoundException($"Конструктор класса {className} с указанными параметрами не найден");
+                //на практике автоматически генерируется пустой конструктор, но на всякий случай пусть будет
+                throw new ConstructorNotFoundException($"У класса {className} не найдены конструкторы");
             }
 
+            ConstructorInfo[] constructorInfos = constructors.Where(x => x.GetParameters().Length == constructorArgs.Length).ToArray();
+            if (constructorInfos.Length == 0)
+            {
+                throw new ConstructorNotFoundException($"У класса {className} не найдены конструкторы с указанным количеством параметров");
+            }
+
+            ConstructorInfo constructor = null;
+            int countConstructors = constructorInfos.Length;
+            int i = 0;
+            while (i < countConstructors && constructor == null)
+            {
+                ParameterInfo[] parameters = constructorInfos[i].GetParameters();
+                bool match = true;
+                for (int j = 0; j < parameters.Length && match; j++)
+                {
+                    //сюда можно добавить проверку на наследников
+                    if (parameters[j].ParameterType != constructorArgs[j].GetType())
+                    {
+                        match = false;
+                    }
+                }
+
+                if (match)
+                {
+                    constructor = constructorInfos[i];
+                }
+                i++;
+            }
+
+            if (constructor == null)
+            {
+                throw new ConstructorNotFoundException($"У класса {className} не найдены конструкторы с параметрами таких типов");
+            }
+
+            //создание экземпляра
+            object result = Activator.CreateInstance(type, constructorArgs);
+            
             return result;
         }
     }

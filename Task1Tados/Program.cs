@@ -51,8 +51,20 @@ namespace Task1Tados
 
             try
             {
-                //неправильный набор аргументов
-                var obj = factory.Create("City", 1);
+                //не совпадает количество параметров
+                var obj = factory.Create("City", 1, 2, 3);
+            }
+            catch (ConstructorNotFoundException e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Ошибка: " + e.Message);
+                Console.ResetColor();
+            }
+
+            try
+            {
+                //неправильный тип аргументов
+                var obj = factory.Create("City", 1, "Perm");
             }
             catch (ConstructorNotFoundException e)
             {
